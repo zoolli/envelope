@@ -1,0 +1,338 @@
+<script>
+class EnvelopeEngine {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        
+        // State
+        this.mode = 'axes'; // 'axes' or 'circle'
+        this.lines = 40;
+        this.circlePoints = 60;
+        this.jumpStep = 2;
+        this.drawProgress = 0; 
+        
+        this.hue = 220;
+        this.speed = 1.0;
+        this.scale = 0.8;
+        this.lineWidth = 1.0;
+        this.lineOpacity = 0.6;
+        this.isAnimating = true;
+        this.isComplete = false;
+        this.time = 0;
+        
+        this.width = window.innerWidth;
+        this.height = window.innerHeight;
+        
+        this.init();
+        this.setupEventListeners();
+        this.animate();
+    }
+
+    init() {
+        this.resize();
+        this.drawProgress = this.circlePoints; 
+    }
+
+    resize() {
+        this.width = window.innerWidth;
+        this.height = window.innerHeight;
+        
+        const dpr = window.devicePixelRatio || 1;
+        this.canvas.width = this.width * dpr;
+        this.canvas.height = this.height * dpr;
+        
+        this.canvas.style.width = `${this.width}px`;
+        this.canvas.style.height = `${this.height}px`;
+        
+        this.ctx.scale(dpr, dpr);
+    }
+
+    setupEventListeners() {
+        window.addEventListener('resize', () => this.resize());
+
+        const modeAxesBtn = document.getElementById('mode-axes');
+        const modeCircleBtn = document.getElementById('mode-circle');
+        const axesControls = document.getElementById('axes-controls');
+        const circleControls = document.getElementById('circle-controls');
+
+        modeAxesBtn.addEventListener('click', () => {
+            this.mode = 'axes';
+            this.drawProgress = 0; 
+            this.isComplete = false;
+            this.isAnimating = true;
+            modeAxesBtn.classList.add('active');
+            modeCircleBtn.classList.remove('active');
+            axesControls.classList.remove('hidden');
+            circleControls.classList.add('hidden');
+            
+            const toggleBtn = document.getElementById('toggle-animation');
+            toggleBtn.textContent = 'Pause';
+        });
+
+        modeCircleBtn.addEventListener('click', () => {
+            this.mode = 'circle';
+            this.drawProgress = 0; 
+            this.isComplete = false;
+            this.isAnimating = true;
+            modeCircleBtn.classList.add('active');
+            modeAxesBtn.classList.remove('active');
+            circleControls.classList.remove('hidden');
+            axesControls.classList.add('hidden');
+            
+            const toggleBtn = document.getElementById('toggle-animation');
+            toggleBtn.textContent = 'Pause';
+        });
+
+        const lineCountInput = document.getElementById('line-count');
+        const circlePointsInput = document.getElementById('circle-points');
+        const jumpStepInput = document.getElementById('jump-step');
+        const hueInput = document.getElementById('hue');
+        const speedInput = document.getElementById('speed');
+        const scaleInput = document.getElementById('scale');
+        const lineWidthInput = document.getElementById('line-width');
+        const lineOpacityInput = document.getElementById('line-opacity');
+        const toggleBtn = document.getElementById('toggle-animation');
+        const replayBtn = document.getElementById('replay');
+        const resetBtn = document.getElementById('reset');
+
+        lineCountInput.addEventListener('input', (e) => {
+            this.lines = parseInt(e.target.value);
+            document.getElementById('line-count-value').textContent = this.lines;
+        });
+
+        circlePointsInput.addEventListener('input', (e) => {
+            this.circlePoints = parseInt(e.target.value);
+            document.getElementById('circle-points-value').textContent = this.circlePoints;
+            jumpStepInput.max = Math.floor(this.circlePoints / 2);
+            if (this.mode === 'circle') this.replay();
+        });
+
+        jumpStepInput.addEventListener('input', (e) => {
+            this.jumpStep = parseInt(e.target.value);
+            document.getElementById('jump-step-value').textContent = this.jumpStep;
+            if (this.mode === 'circle') this.replay();
+        });
+
+        hueInput.addEventListener('input', (e) => {
+            this.hue = parseInt(e.target.value);
+            document.getElementById('hue-value').textContent = `${this.hue}°`;
+        });
+
+        speedInput.addEventListener('input', (e) => {
+            this.speed = parseFloat(e.target.value);
+            document.getElementById('speed-value').textContent = this.speed.toFixed(1);
+        });
+
+        scaleInput.addEventListener('input', (e) => {
+            this.scale = parseFloat(e.target.value);
+            document.getElementById('scale-value').textContent = this.scale.toFixed(2);
+        });
+
+        lineWidthInput.addEventListener('input', (e) => {
+            this.lineWidth = parseFloat(e.target.value);
+            document.getElementById('line-width-value').textContent = this.lineWidth.toFixed(1);
+        });
+
+        lineOpacityInput.addEventListener('input', (e) => {
+            this.lineOpacity = parseFloat(e.target.value);
+            document.getElementById('line-opacity-value').textContent = this.lineOpacity.toFixed(2);
+        });
+
+        toggleBtn.addEventListener('click', () => {
+            if (this.isComplete && !this.isAnimating) {
+                this.replay();
+            } else {
+                this.isAnimating = !this.isAnimating;
+                toggleBtn.textContent = this.isAnimating ? 'Pause' : 'Play';
+            }
+        });
+
+        replayBtn.addEventListener('click', () => this.replay());
+
+        resetBtn.addEventListener('click', () => {
+            this.lines = 40;
+            this.circlePoints = 60;
+            this.jumpStep = 2;
+            this.hue = 220;
+            this.speed = 1.0;
+            this.scale = 0.8;
+            this.lineWidth = 1.0;
+            this.lineOpacity = 0.6;
+            
+            lineCountInput.value = 40;
+            circlePointsInput.value = 60;
+            jumpStepInput.value = 2;
+            hueInput.value = 220;
+            speedInput.value = 1.0;
+            scaleInput.value = 0.8;
+            lineWidthInput.value = 1.0;
+            lineOpacityInput.value = 0.6;
+            
+            document.getElementById('line-count-value').textContent = 40;
+            document.getElementById('circle-points-value').textContent = 60;
+            document.getElementById('jump-step-value').textContent = 2;
+            document.getElementById('hue-value').textContent = '220°';
+            document.getElementById('speed-value').textContent = '1.0';
+            document.getElementById('scale-value').textContent = '0.8';
+            document.getElementById('line-width-value').textContent = '1.0';
+            document.getElementById('line-opacity-value').textContent = '0.6';
+            
+            this.replay();
+        });
+    }
+
+    replay() {
+        this.drawProgress = 0;
+        this.isAnimating = true;
+        this.isComplete = false;
+        document.getElementById('toggle-animation').textContent = 'Pause';
+    }
+
+    draw() {
+        this.ctx.clearRect(0, 0, this.width, this.height);
+        
+        if (this.mode === 'axes') {
+            this.drawAxesEnvelope();
+        } else {
+            this.drawCircleEnvelope();
+        }
+    }
+
+    drawAxesEnvelope() {
+        const sidebarWidth = 350; 
+        const centerX = sidebarWidth + (this.width - sidebarWidth) / 2;
+        const centerY = this.height / 2;
+        const maxSize = Math.min(this.width - sidebarWidth, this.height) * 0.4 * this.scale;
+        
+        const offset = Math.sin(this.time * 0.02) * 50 * this.speed;
+        
+        this.drawEnvelope(centerX, centerY, centerX + maxSize, centerY, centerX, centerY - maxSize, offset);
+        this.drawEnvelope(centerX, centerY, centerX - maxSize, centerY, centerX, centerY - maxSize, -offset);
+        this.drawEnvelope(centerX, centerY, centerX - maxSize, centerY, centerX, centerY + maxSize, offset);
+        this.drawEnvelope(centerX, centerY, centerX + maxSize, centerY, centerX, centerY + maxSize, -offset);
+    }
+
+    drawCircleEnvelope() {
+        const sidebarWidth = 350; 
+        const centerX = sidebarWidth + (this.width - sidebarWidth) / 2;
+        const centerY = this.height / 2;
+        const radius = Math.min(this.width - sidebarWidth, this.height) * 0.4 * this.scale;
+        
+        this.ctx.beginPath();
+        this.ctx.strokeStyle = `hsla(${this.hue}, 40%, 40%, 0.15)`;
+        this.ctx.lineWidth = 1;
+        this.ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        this.ctx.stroke();
+
+        const n = this.circlePoints;
+        const step = this.jumpStep;
+        
+        const currentCount = Math.floor(this.drawProgress);
+
+        for (let i = 0; i < currentCount; i++) {
+            const angle1 = (i / n) * Math.PI * 2;
+            const angle2 = ((i + step) / n) * Math.PI * 2;
+            
+            const p1 = {
+                x: centerX + Math.cos(angle1) * radius,
+                y: centerY + Math.sin(angle1) * radius
+            };
+            
+            const p2 = {
+                x: centerX + Math.cos(angle2) * radius,
+                y: centerY + Math.sin(angle2) * radius
+            };
+
+            const t = i / n;
+            const currentHue = (this.hue + t * 60 + Math.sin(this.time * 0.02) * 20) % 360;
+            
+            this.ctx.beginPath();
+            const opacity = this.lineOpacity * (0.6 + Math.sin(this.time * 0.02 + t * Math.PI) * 0.3);
+            this.ctx.strokeStyle = `hsla(${currentHue}, 70%, 50%, ${opacity})`;
+            this.ctx.lineWidth = this.lineWidth;
+            this.ctx.moveTo(p1.x, p1.y);
+            this.ctx.lineTo(p2.x, p2.y);
+            this.ctx.stroke();
+
+            if (n <= 100) {
+                this.ctx.fillStyle = `hsla(${currentHue}, 80%, 65%, 0.5)`;
+                this.ctx.beginPath();
+                this.ctx.arc(p1.x, p1.y, 2, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+        }
+        
+        if (currentCount < n && this.isAnimating) {
+            const nextAngle = (currentCount / n) * Math.PI * 2;
+            this.ctx.fillStyle = `hsl(${this.hue}, 70%, 50%)`;
+            this.ctx.beginPath();
+            this.ctx.arc(centerX + Math.cos(nextAngle) * radius, centerY + Math.sin(nextAngle) * radius, 4, 0, Math.PI * 2);
+            this.ctx.fill();
+            this.ctx.shadowBlur = 10;
+            this.ctx.shadowColor = `hsla(${this.hue}, 70%, 50%, 0.5)`;
+            this.ctx.fill();
+            this.ctx.shadowBlur = 0;
+        }
+    }
+
+    drawEnvelope(ox, oy, xEnd, yEnd, xStart, yStart, animationOffset) {
+        const currentCount = Math.floor(this.drawProgress);
+        
+        for (let i = 0; i <= currentCount; i++) {
+            const t = i / this.lines;
+            
+            const p1 = {
+                x: ox + (xEnd - ox) * t,
+                y: oy + (yEnd - oy) * t
+            };
+            
+            const p2 = {
+                x: ox + (xStart - ox) * (1 - t),
+                y: oy + (yStart - oy) * (1 - t)
+            };
+
+            const harmonic = Math.sin(this.time * 0.05 + t * Math.PI) * 10 * this.speed;
+            
+            this.ctx.beginPath();
+            const currentHue = (this.hue + t * 40 + harmonic) % 360;
+            const opacity = this.lineOpacity * (0.6 + Math.sin(this.time * 0.02) * 0.3);
+            this.ctx.strokeStyle = `hsla(${currentHue}, 70%, 50%, ${opacity})`;
+            this.ctx.lineWidth = this.lineWidth;
+            
+            this.ctx.moveTo(p1.x, p1.y);
+            this.ctx.lineTo(p2.x, p2.y);
+            this.ctx.stroke();
+            
+            if (i % 5 === 0) {
+                this.ctx.fillStyle = `hsla(${currentHue}, 70%, 50%, ${opacity * 0.5})`;
+                this.ctx.beginPath();
+                this.ctx.arc(p1.x, p1.y, 1.5 + this.lineWidth * 0.5, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+        }
+    }
+
+    animate() {
+        if (this.isAnimating) {
+            this.time += 0.5 * this.speed;
+            
+            const targetPoints = this.mode === 'circle' ? this.circlePoints : this.lines;
+            this.drawProgress += 0.2 * this.speed;
+            
+            if (this.drawProgress >= targetPoints) {
+                this.drawProgress = targetPoints;
+                this.isAnimating = false;
+                this.isComplete = true;
+                document.getElementById('toggle-animation').textContent = 'Replay';
+            }
+        }
+        this.draw();
+        requestAnimationFrame(() => this.animate());
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('canvas');
+    new EnvelopeEngine(canvas);
+});
+</script>

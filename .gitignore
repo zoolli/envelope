@@ -1,0 +1,6 @@
+# System files
+.DS_Store
+Thumbs.db
+
+# Project-specific ignores
+# (None so far)

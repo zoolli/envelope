@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Envelope Math Paint | Interactive String Art</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div class="ui-panel" id="ui-panel">
+        <header>
+            <h1>Envelope Math</h1>
+            <p>Mathematical Beauty in String Art</p>
+        </header>
+        
+        <div class="mode-selector">
+            <button id="mode-axes" class="mode-btn active">Axes</button>
+            <button id="mode-circle" class="mode-btn">Circle</button>
+        </div>
+
+        <div class="controls">
+            <!-- Axes Mode Controls -->
+            <div id="axes-controls">
+                <div class="control-group">
+                    <div class="label-row">
+                        <label for="line-count">Subdivisions</label>
+                        <span id="line-count-value">40</span>
+                    </div>
+                    <input type="range" id="line-count" min="5" max="100" value="40">
+                </div>
+            </div>
+
+            <!-- Circle Mode Controls (Hidden by default) -->
+            <div id="circle-controls" class="hidden">
+                <div class="control-group">
+                    <div class="label-row">
+                        <label for="circle-points">Points (Even)</label>
+                        <span id="circle-points-value">60</span>
+                    </div>
+                    <input type="range" id="circle-points" min="4" max="400" step="2" value="60">
+                </div>
+                <div class="control-group">
+                    <div class="label-row">
+                        <label for="jump-step">Jump Step</label>
+                        <span id="jump-step-value">2</span>
+                    </div>
+                    <input type="range" id="jump-step" min="1" max="30" step="1" value="2">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="label-row">
+                    <label for="hue">Base Color</label>
+                    <span id="hue-value">220°</span>
+                </div>
+                <input type="range" id="hue" min="0" max="360" value="220">
+            </div>
+
+            <div class="control-group">
+                <div class="label-row">
+                    <label for="speed">Animation Speed</label>
+                    <span id="speed-value">1.0</span>
+                </div>
+                <input type="range" id="speed" min="0" max="50" step="0.1" value="1.0">
+            </div>
+
+            <div class="control-group">
+                <div class="label-row">
+                    <label for="scale">Scale</label>
+                    <span id="scale-value">0.8</span>
+                </div>
+                <input type="range" id="scale" min="0.1" max="1.5" step="0.01" value="0.8">
+            </div>
+
+            <div class="control-group">
+                <div class="label-row">
+                    <label for="line-width">Line Width</label>
+                    <span id="line-width-value">1.0</span>
+                </div>
+                <input type="range" id="line-width" min="0.1" max="5.0" step="0.1" value="1.0">
+            </div>
+
+            <div class="control-group">
+                <div class="label-row">
+                    <label for="line-opacity">Line Opacity</label>
+                    <span id="line-opacity-value">0.6</span>
+                </div>
+                <input type="range" id="line-opacity" min="0.1" max="1.0" step="0.05" value="0.6">
+            </div>
+
+            <div class="button-group">
+                <button id="toggle-animation" class="btn">Pause</button>
+                <button id="replay" class="btn secondary">Replay</button>
+                <button id="reset" class="btn secondary">Reset</button>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Discover the curve formed by straight lines.</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
