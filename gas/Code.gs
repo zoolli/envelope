@@ -1,7 +1,7 @@
 // --- CONFIGURATION ---
 // 1. Create a Google Sheet and paste its ID here
 // 2. Add columns: [Timestamp, User Email, Mode, Subdivisions/Points]
-const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE'; 
+const SPREADSHEET_ID = '1BPES3pOnN__RnGZql5SJ-aWrg-hQaexj0URo2DFGVj4'; 
 
 function doGet(e) {
   // Optional: Log visit info to the Spreadsheet
@@ -23,7 +23,7 @@ function include(filename) {
  * Records user visit into a Google Spreadsheet
  */
 function recordVisit(e) {
-  if (SPREADSHEET_ID === 'YOUR_SPREADSHEET_ID_HERE') return;
+  if (SPREADSHEET_ID === '1BPES3pOnN__RnGZql5SJ-aWrg-hQaexj0URo2DFGVj4') return;
   
   try {
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
