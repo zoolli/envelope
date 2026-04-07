@@ -23,7 +23,7 @@ function include(filename) {
  * Records user visit into a Google Spreadsheet
  */
 function recordVisit(e) {
-  if (SPREADSHEET_ID === '1BPES3pOnN__RnGZql5SJ-aWrg-hQaexj0URo2DFGVj4') return;
+  if (!SPREADSHEET_ID || SPREADSHEET_ID === 'YOUR_SPREADSHEET_ID_HERE') return;
   
   try {
     const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
